@@ -34,8 +34,9 @@ jobs:
           pip install schemachange
           
           # Step 2: Run schemachange, looking in the 'deploy' folder
-          # 🌟 FIX APPLIED: REMOVING the unsupported '--password' flag. 🌟
-          schemachange -f deploy deploy \
+          # 🌟 FIX APPLIED: The command must start with 'schemachange deploy' 
+          # The -f flag points to the folder.
+          schemachange deploy -f deploy \
                        -a "$SF_ACCOUNT" \
                        -u "$SF_USERNAME" \
                        -r "$SF_ROLE" \
