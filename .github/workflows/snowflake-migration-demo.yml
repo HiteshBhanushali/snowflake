@@ -19,18 +19,23 @@ jobs:
 
       # 🛠️ FIXED: INSTALL SNOWSQL VIA OFFICIAL SCRIPT
       - name: Install SnowSQL
+        id: install_snowsql # Added an ID for reference, optional but good practice
         run: |
-          # Download the installer script
+          # 1. Download the installer script
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
           
-          # Run the installer non-interactively, putting 'snowsql' in ~/bin
-          SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
+          # 2. Set environment variables for non-interactive installation
+          INSTALL_DESTINATION="${HOME}/bin"
           
-          # IMPORTANT: Source the profile to add ~/bin to the PATH for the next steps
-          source ~/.profile
+          # Run the installer non-interactively, putting 'snowsql' in ~/bin
+          SNOWSQL_DEST="${INSTALL_DESTINATION}" SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
+          
+          # 🌟 FIX: Add the destination directory to the $GITHUB_PATH 🌟
+          # This makes 'snowsql' available to all subsequent steps in this job.
+          echo "${INSTALL_DESTINATION}" >> $GITHUB_PATH
           
       - name: Run Snowflake SQL scripts
-        # The 'snowsql' command is now available because of the previous step
+        # 'snowsql' will now be found in this step
         run: |
           snowsql -a ${{ secrets.SF_ACCOUNT }} \
                   -u ${{ secrets.SF_USER }} \
