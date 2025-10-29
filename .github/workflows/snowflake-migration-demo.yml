@@ -21,7 +21,7 @@ jobs:
       # This step installs schemachange and runs the deployment
       - name: Run schemachange Deployment
         env:
-          # Define all secrets as environment variables
+          # Define all secrets as environment variables (THIS BLOCK REMAINS THE SAME)
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
           SF_USERNAME: ${{ secrets.SF_USER }} 
           SF_ROLE: ${{ secrets.SF_ROLE }}
@@ -34,11 +34,10 @@ jobs:
           pip install schemachange
           
           # Step 2: Run schemachange, looking in the 'deploy' folder
-          # 🌟 FIX APPLIED: Wrapping all variable arguments in double quotes 🌟
-          schemachange -f deploy \
+          # 🌟 FIX APPLIED: REMOVING the unsupported '--password' flag. 🌟
+          schemachange -f deploy deploy \
                        -a "$SF_ACCOUNT" \
                        -u "$SF_USERNAME" \
                        -r "$SF_ROLE" \
                        -w "$SF_WAREHOUSE" \
-                       -d "$SF_DATABASE" \
-                       --password "$SNOWFLAKE_PASSWORD"
+                       -d "$SF_DATABASE"
