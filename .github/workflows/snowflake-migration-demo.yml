@@ -27,7 +27,6 @@ jobs:
                   -r ${{ secrets.SF_ROLE }} \
                   -w ${{ secrets.SF_WAREHOUSE }} \
                   -d ${{ secrets.SF_DATABASE }} \
-                  -s ${{ secrets.SNOWFLAKE_SCHEMA }} \
                   -f sql_scripts/your_deployment_script.sql # Execute a specific SQL script
         env:
           SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }} # Pass Snowflake password securely as an environment variable
