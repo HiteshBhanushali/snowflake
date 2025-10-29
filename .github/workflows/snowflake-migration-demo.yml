@@ -1,36 +1,42 @@
 name: Deploy to Snowflake
 
 on:
-  # Existing triggers for automatic runs:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
+      - main
     paths:
-      - 'deploy/**' # Only trigger if changes are in the deploy folder
-
-  # 🌟 ADD THIS LINE TO ENABLE MANUAL RUNNING FROM THE GITHUB UI 🌟
+      - 'deploy/**'
+  # Added for manual runs as discussed previously
   workflow_dispatch: 
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest # Run the job on an Ubuntu virtual machine
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Action to check out your repository content
+        uses: actions/checkout@v4
 
+      # 🛠️ FIXED: INSTALL SNOWSQL VIA OFFICIAL SCRIPT
       - name: Install SnowSQL
         run: |
-          sudo apt-get update
-          sudo apt-get install -y snowsql # Install the Snowflake CLI
-
+          # Download the installer script
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
+          
+          # Run the installer non-interactively, putting 'snowsql' in ~/bin
+          SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
+          
+          # IMPORTANT: Source the profile to add ~/bin to the PATH for the next steps
+          source ~/.profile
+          
       - name: Run Snowflake SQL scripts
+        # The 'snowsql' command is now available because of the previous step
         run: |
           snowsql -a ${{ secrets.SF_ACCOUNT }} \
                   -u ${{ secrets.SF_USER }} \
                   -r ${{ secrets.SF_ROLE }} \
                   -w ${{ secrets.SF_WAREHOUSE }} \
                   -d ${{ secrets.SF_DATABASE }} \
-                  -f sql_scripts/your_deployment_script.sql # Execute a specific SQL script
+                  -f deploy/V1.1.1__initial_load.sql # Updated path to match 'deploy/' folder
         env:
-          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }} # Pass Snowflake password securely as an environment variable
+          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }}
