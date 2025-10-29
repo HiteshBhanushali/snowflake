@@ -1,14 +1,3 @@
-name: Deploy to Snowflake
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'deploy/**'
-  # Added for manual runs as discussed previously
-  workflow_dispatch: 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,31 +6,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 🛠️ FIXED: INSTALL SNOWSQL VIA OFFICIAL SCRIPT
-      - name: Install SnowSQL
-        id: install_snowsql # Added an ID for reference, optional but good practice
-        run: |
-          # 1. Download the installer script
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
-          
-          # 2. Set environment variables for non-interactive installation
-          INSTALL_DESTINATION="${HOME}/bin"
-          
-          # Run the installer non-interactively, putting 'snowsql' in ~/bin
-          SNOWSQL_DEST="${INSTALL_DESTINATION}" SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
-          
-          # 🌟 FIX: Add the destination directory to the $GITHUB_PATH 🌟
-          # This makes 'snowsql' available to all subsequent steps in this job.
-          echo "${INSTALL_DESTINATION}" >> $GITHUB_PATH
-          
-      - name: Run Snowflake SQL scripts
-        # 'snowsql' will now be found in this step
-        run: |
-          snowsql -a ${{ secrets.SF_ACCOUNT }} \
-                  -u ${{ secrets.SF_USER }} \
-                  -r ${{ secrets.SF_ROLE }} \
-                  -w ${{ secrets.SF_WAREHOUSE }} \
-                  -d ${{ secrets.SF_DATABASE }} \
-                  -f deploy/V1.1.1__initial_load.sql # Updated path to match 'deploy/' folder
+      # This step installs schemachange and runs the deployment
+      - name: Run schemachange Deployment
         env:
-          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          # Define all secrets as environment variables
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+          SF_USERNAME: ${{ secrets.SF_USER }} 
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }} 
+        
+        run: |
+          # Step 1: Install schemachange via pip
+          pip install schemachange
+          
+          # Step 2: Run schemachange, looking in the 'deploy' folder
+          schemachange -f deploy \
+                       -a $SF_ACCOUNT \
+                       -u $SF_USERNAME \
+                       -r $SF_ROLE \
+                       -w $SF_WAREHOUSE \
+                       -d $SF_DATABASE \
+                       --password $SNOWFLAKE_PASSWORD
