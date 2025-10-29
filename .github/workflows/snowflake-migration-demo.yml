@@ -34,10 +34,11 @@ jobs:
           pip install schemachange
           
           # Step 2: Run schemachange, looking in the 'deploy' folder
+          # 🌟 FIX APPLIED: Wrapping all variable arguments in double quotes 🌟
           schemachange -f deploy \
-                       -a $SF_ACCOUNT \
-                       -u $SF_USERNAME \
-                       -r $SF_ROLE \
-                       -w $SF_WAREHOUSE \
-                       -d $SF_DATABASE \
-                       --password $SNOWFLAKE_PASSWORD
+                       -a "$SF_ACCOUNT" \
+                       -u "$SF_USERNAME" \
+                       -r "$SF_ROLE" \
+                       -w "$SF_WAREHOUSE" \
+                       -d "$SF_DATABASE" \
+                       --password "$SNOWFLAKE_PASSWORD"
