@@ -1,0 +1,33 @@
+name: Deploy to Snowflake
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+    paths:
+      - 'deploy/**' # Only trigger if changes are in the sql_scripts folder
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Run the job on an Ubuntu virtual machine
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Action to check out your repository content
+
+      - name: Install SnowSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y snowsql # Install the Snowflake CLI
+
+      - name: Run Snowflake SQL scripts
+        run: |
+          snowsql -a ${{ secrets.SF_ACCOUNT }} \
+                  -u ${{ secrets.SF_USER }} \
+                  -r ${{ secrets.SF_ROLE }} \
+                  -w ${{ secrets.SF_WAREHOUSE }} \
+                  -d ${{ secrets.SF_DATABASE }} \
+                  -s ${{ secrets.SNOWFLAKE_SCHEMA }} \
+                  -f sql_scripts/your_deployment_script.sql # Execute a specific SQL script
+        env:
+          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }} # Pass Snowflake password securely as an environment variable
